@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DirectScol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ ECRAN DE CONNEXION ============ -->
+<div id="ecran-connexion">
+  <div class="panneau-identite">
+    <div class="sceau">DS</div>
+    <h1>DirectScol</h1>
+    <p>L'espace numérique de l'établissement : notes, devoirs et messagerie réunis au même endroit, pour les élèves comme pour les professeurs.</p>
+    <div class="annee-scolaire">Année scolaire 2026 – 2027 </div>
+  </div>
+  <div class="panneau-connexion">
+    <div class="carte-connexion">
+      <h2>Connexion</h2>
+      <p class="sous-titre">Entrez vos identifiants pour accéder à votre espace.</p>
+
+      <div id="erreur-connexion" class="message-erreur hidden"></div>
+
+      <form id="formulaire-connexion">
+        <div class="champ">
+          <label for="champ-identifiant">Identifiant</label>
+          <input type="text" id="champ-identifiant" autocomplete="username" required>
+        </div>
+        <div class="champ">
+          <label for="champ-mot-de-passe">Mot de passe</label>
+          <input type="password" id="champ-mot-de-passe" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="bouton bouton-principal" id="bouton-connexion">Se connecter</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ESPACE APPLICATION ============ -->
+<div id="ecran-application" class="hidden">
+  <header class="entete">
+    <div class="marque">
+      <div class="sceau">DS</div>
+      <h1>DirectScol</h1>
+    </div>
+    <div class="profil">
+      <span id="badge-role" class="badge-role">Élève</span>
+      <span id="nom-utilisateur"></span>
+      <button class="bouton bouton-discret" id="bouton-deconnexion">Déconnexion</button>
+    </div>
+  </header>
+
+  <main class="corps">
+    <nav class="onglets">
+      <button class="onglet actif" data-onglet="accueil">Accueil</button>
+      <button class="onglet" data-onglet="notes">Notes</button>
+      <button class="onglet" data-onglet="messagerie">Messagerie</button>
+      <button class="onglet" data-onglet="devoirs">Devoirs</button>
+    </nav>
+
+    <section class="panneau-contenu">
+
+      <!-- ---------- ACCUEIL ---------- -->
+      <div class="vue actif" id="vue-accueil">
+        <div class="entete-vue">
+          <div>
+            <h2 id="titre-bienvenue">Bonjour</h2>
+            <p id="sous-titre-bienvenue"></p>
+          </div>
+        </div>
+        <div class="grille-stats" id="grille-stats"></div>
+        <div class="liste-recente">
+          <h3 id="titre-liste-recente">Activité récente</h3>
+          <div id="contenu-liste-recente"></div>
+        </div>
+      </div>
+
+      <!-- ---------- NOTES ---------- -->
+      <div class="vue" id="vue-notes">
+        <div class="entete-vue">
+          <div>
+            <h2>Notes</h2>
+            <p id="sous-titre-notes"></p>
+          </div>
+        </div>
+        <div id="contenu-notes"></div>
+      </div>
+
+      <!-- ---------- MESSAGERIE ---------- -->
+      <div class="vue" id="vue-messagerie">
+        <div class="entete-vue">
+          <div>
+            <h2>Messagerie</h2>
+            <p>Échangez avec les professeurs, les élèves ou toute la classe.</p>
+          </div>
+        </div>
+        <div class="zone-messagerie">
+          <div class="fil-messages" id="fil-messages"></div>
+          <div class="formulaire-message">
+            <h3>Nouveau message</h3>
+            <form id="formulaire-message">
+              <div class="champ">
+                <label for="destinataire-message">Destinataire</label>
+                <select id="destinataire-message"></select>
+              </div>
+              <div class="champ">
+                <label for="contenu-message">Message</label>
+                <textarea id="contenu-message" rows="4" required></textarea>
+              </div>
+              <button type="submit" class="bouton bouton-principal">Envoyer</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- DEVOIRS ---------- -->
+      <div class="vue" id="vue-devoirs">
+        <div class="entete-vue">
+          <div>
+            <h2>Devoirs</h2>
+            <p id="sous-titre-devoirs"></p>
+          </div>
+        </div>
+        <div id="contenu-devoirs"></div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>

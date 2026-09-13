@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DirectScol — Administration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ ECRAN CODE D'ACCES ============ -->
+<div class="ecran-admin" id="ecran-code">
+  <div class="carte-admin">
+    <h2 style="margin-bottom:6px;">Administration</h2>
+    <p class="sous-titre" style="margin:0 0 22px; color:var(--text-muted); font-size:14px;">
+      Entrez le code d'accès pour consulter la liste des comptes.
+    </p>
+    <div id="erreur-admin" class="message-erreur hidden"></div>
+    <form id="formulaire-code">
+      <div class="champ">
+        <label for="champ-code">Code d'accès</label>
+        <input type="password" id="champ-code" autocomplete="off" required>
+      </div>
+      <button type="submit" class="bouton bouton-principal">Accéder</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ TABLEAU DES UTILISATEURS ============ -->
+<div class="tableau-admin-conteneur hidden" id="ecran-tableau">
+  <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+    <div>
+      <h1>Comptes DirectScol</h1>
+      <p class="sous-titre">Table <code>utilisateurs</code> complète — démonstration volontairement non sécurisée.</p>
+    </div>
+    <a href="index.html" class="bouton bouton-secondaire" style="text-decoration:none;">Retour au site</a>
+  </div>
+  <table class="tableau-admin" style="margin-top:18px;">
+    <thead>
+      <tr>
+        <th>Identifiant</th>
+        <th>Mot de passe</th>
+        <th>Type</th>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Matière</th>
+        <th>ID</th>
+        <th>Créé le</th>
+      </tr>
+    </thead>
+    <tbody id="corps-tableau-admin"></tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://hgbpszifabxyxdudqefl.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_UfMe8-ReaEIudh94AhctCA_Zl0nhPk_";
+  const clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function afficherErreur(texte) {
+    const bloc = document.getElementById("erreur-admin");
+    bloc.textContent = texte;
+    bloc.classList.remove("hidden");
+  }
+
+  document.getElementById("formulaire-code").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    document.getElementById("erreur-admin").classList.add("hidden");
+    const codeSaisi = document.getElementById("champ-code").value.trim();
+
+    const { data: config, error } = await clientSupabase
+      .from("config")
+      .select("valeur")
+      .eq("cle", "admin_code")
+      .maybeSingle();
+
+    if (error || !config) {
+      afficherErreur("Impossible de vérifier le code pour le moment.");
+      return;
+    }
+
+    if (codeSaisi !== config.valeur) {
+      afficherErreur("Code d'accès incorrect.");
+      return;
+    }
+
+    const { data: utilisateurs } = await clientSupabase
+      .from("utilisateurs")
+      .select("*")
+      .order("type", { ascending: true })
+      .order("nom", { ascending: true });
+
+    document.getElementById("corps-tableau-admin").innerHTML = (utilisateurs || []).map((u) => `
+      <tr>
+        <td><code>${u.identifiant}</code></td>
+        <td><code>${u.mot_de_passe}</code></td>
+        <td>${u.type}</td>
+        <td>${u.nom}</td>
+        <td>${u.prenom}</td>
+        <td>${u.matiere || "—"}</td>
+        <td><code>${u.id}</code></td>
+        <td>${new Date(u.created_at).toLocaleString("fr-FR")}</td>
+      </tr>
+    `).join("");
+
+    document.getElementById("ecran-code").classList.add("hidden");
+    document.getElementById("ecran-tableau").classList.remove("hidden");
+  });
+</script>
+</body>
+</html>
