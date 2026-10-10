@@ -14,7 +14,7 @@ Application scolaire de démonstration (année 2026–2027) utilisant HTML/CSS/J
 ## Déploiement
 1. Appliquer `supabase/migrations/20261010_directscol_classes_schedule.sql` dans le SQL Editor du projet Supabase lié.
 2. Déployer la branche `main` sur GitHub Pages ou Netlify (racine du dépôt).
-3. Dans Supabase, créer les comptes de démonstration dans `utilisateurs`, puis renseigner `classe` pour les élèves et les créneaux dans `emplois_du_temps`.
+3. La migration `20261010_directscol_demo_timetable_seed.sql` ajoute 90 créneaux d'exemple pour 2nde A, 2nde B et 2nde C. Les comptes ne sont pas créés automatiquement : ajoutez les comptes de démonstration dans `utilisateurs`, avec `classe` renseignée pour chaque élève et `matiere` pour chaque professeur.
 
 ## Limite de sécurité importante
 Cette version conserve volontairement le mécanisme de connexion demandé, qui compare des mots de passe en clair dans une table accessible depuis le navigateur. Les politiques RLS historiques sont ouvertes. Elle doit rester une démonstration avec données fictives, pas un service scolaire réel ni un stockage de données d'élèves réels. Pour une mise en production, il faudra migrer l'authentification et restreindre les politiques RLS côté serveur.
