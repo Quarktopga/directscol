@@ -70,7 +70,7 @@ function masquerErreurConnexion() {
 async function chargerAnnuaire() {
   const { data, error } = await clientSupabase
     .from("utilisateurs")
-    .select("id, identifiant, type, nom, prenom, matiere")
+    .select("id, identifiant, type, nom, prenom, matiere, classe")
     .order("type", { ascending: true })
     .order("nom", { ascending: true });
   if (!error && data) annuaire = data;
@@ -95,6 +95,7 @@ async function tenterConnexion(identifiant, motDePasse) {
 
   utilisateur = data;
   localStorage.setItem(CLE_SESSION, JSON.stringify(data));
+  if (data.type === "admin") { window.location.href = "admin.html"; return; }
   await demarrerApplication();
 }
 
@@ -131,6 +132,7 @@ async function demarrerApplication() {
   await Promise.all([
     rendreAccueil(),
     rendreNotes(),
+    rendreEmploiDuTemps(),
     rendreDevoirs(),
     rendreMessagerie(),
   ]);
@@ -534,17 +536,52 @@ function reinitialiserFormulaireDevoir() {
   document.getElementById("bouton-devoir-annuler").classList.add("hidden");
 }
 
+
+async function rendreEmploiDuTemps() {
+  const conteneur = document.getElementById("contenu-emploi-du-temps");
+  if (!conteneur) return;
+  const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+  let requete = clientSupabase.from("emplois_du_temps").select("*").order("jour").order("heure_debut");
+  if (utilisateur.type === "professeur") {
+    requete = requete.eq("professeur_id", utilisateur.id);
+    document.getElementById("sous-titre-emploi-du-temps").textContent = "Vos cours et salles, par jour.";
+  } else {
+    if (!utilisateur.classe) {
+      conteneur.innerHTML = '<div class="vide">Aucune classe n’est associée à ce compte.</div>';
+      return;
+    }
+    requete = requete.eq("classe", utilisateur.classe);
+    document.getElementById("sous-titre-emploi-du-temps").textContent = "Classe " + utilisateur.classe;
+  }
+  const { data, error } = await requete;
+  if (error) {
+    conteneur.innerHTML = '<div class="message-erreur">Impossible de charger l’emploi du temps. Vérifiez que la migration Supabase a été appliquée.</div>';
+    return;
+  }
+  if (!data || !data.length) {
+    conteneur.innerHTML = '<div class="vide">Aucun cours planifié pour le moment.</div>';
+    return;
+  }
+  conteneur.innerHTML = jours.map((jour, index) => {
+    const cours = data.filter(c => c.jour === index + 1);
+    if (!cours.length) return "";
+    return '<section class="bloc-matiere"><div class="titre-matiere"><h3>' + jour + '</h3></div>' +
+      '<div class="grille-devoirs">' + cours.map(c => {
+        const prof = nomComplet(utilisateurParId(c.professeur_id));
+        return '<article class="carte-devoir"><span class="matiere-tag">' + c.heure_debut.slice(0,5) + ' – ' + c.heure_fin.slice(0,5) + '</span><h4>' + c.matiere + '</h4><p>' + (utilisateur.type === "professeur" ? (c.classe || "") : prof) + '</p><div class="echeance">' + (c.salle || "Salle à préciser") + '</div></article>';
+      }).join("") + '</div></section>';
+  }).join("") || '<div class="vide">Aucun cours cette semaine.</div>';
+}
+
 // ------------------------------------------------------------
 // Messagerie
 // ------------------------------------------------------------
 
 function remplirSelectDestinataire() {
   const select = document.getElementById("destinataire-message");
-  const autres = annuaire.filter((u) => u.id !== utilisateur.id);
+  const autres = annuaire.filter((u) => u.id !== utilisateur.id && (utilisateur.type === "professeur" || u.type === "professeur"));
   const options = [];
-  if (utilisateur.type === "professeur") {
-    options.push(`<option value="">Toute la classe</option>`);
-  }
+
   options.push(...autres.map((u) => {
     const role = u.type === "professeur" ? `Professeur · ${u.matiere}` : "Élève";
     return `<option value="${u.id}">${nomComplet(u)} — ${role}</option>`;
